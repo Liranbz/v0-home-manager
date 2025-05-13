@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
+import { Volume2, VolumeX, SkipForward } from "lucide-react"
 
 // Nature images for fallback slideshow
 const natureImages = [
@@ -18,25 +19,22 @@ export function YoutubeEmbed() {
   const [fallbackActive, setFallbackActive] = useState(true) // Start with fallback active by default
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [isMuted, setIsMuted] = useState(true) // Track mute state
+  const [videoError, setVideoError] = useState(false)
 
-  // Expanded list of reliable relaxing/nature video IDs from YouTube
+  // Updated reliable video IDs from SoothingRelaxation
   const relaxingVideoIds = [
-    // Nature scenes
-    "TGan48YE9Us", // Beautiful Nature Video
-    "BHACKCNDMW8", // 4K Relaxing Nature
-    "86YLFOog4GM", // Relaxing Nature Sounds
-    "qRTVg8HHzUo", // Beautiful Nature Scenery
-    "ynLpZGegiJE", // Peaceful Nature Scenes
-
-    // Aquarium/Ocean videos
-    "Z0KTUPXfADg", // Coral Reef Aquarium
-    "8plwv25NYRo", // Underwater Wonders
-    "zJ7hUvU-d2Q", // Ocean Aquarium
-
-    // Relaxing music with nature
-    "lE6RYpe9IT0", // Relaxing Music with Nature
-    "WZKW2Hq2fks", // Meditation Music with Nature
     "qFZKK3OXbDw", // Piano with Nature Sounds
+    "lCOF9LN-Opo", // Relaxing Sleep Music
+    "HSOtku1j600", // Beautiful Piano Music
+    "WJ3-F02-F_Y", // Relaxing Music with Beautiful Nature
+    "WZKW2Hq2fks", // Meditation Music with Nature
+    "lE6RYpe9IT0", // Relaxing Music with Nature
+    "sjkrrmBnpGE", // Beautiful Piano Music
+    "hlWiI4xVXKY", // Relaxing Music & Soft Rain
+    "77ZozI0rw7w", // Relaxing Sleep Music
+    "y7e-GC6oGhg", // Relaxing Music with Water Sounds
+    "vwrYbdAypUU"  // Relaxing Piano Music & Rain Sounds
   ]
 
   // Select a random video on component mount
@@ -53,8 +51,14 @@ export function YoutubeEmbed() {
 
   // Function to select a random video
   const selectRandomVideo = () => {
-    const randomIndex = Math.floor(Math.random() * relaxingVideoIds.length)
-    setCurrentVideoId(relaxingVideoIds[randomIndex])
+    // Reset error state
+    setVideoError(false)
+    
+    // Get a video ID that we haven't tried yet
+    let randomIndex = Math.floor(Math.random() * relaxingVideoIds.length)
+    let videoId = relaxingVideoIds[randomIndex]
+    
+    setCurrentVideoId(videoId)
   }
 
   // Try a different video if the current one fails
@@ -62,6 +66,21 @@ export function YoutubeEmbed() {
     console.log("Trying a different video...")
     selectRandomVideo()
     setFallbackActive(false) // Try YouTube again
+  }
+
+  // Toggle mute state and reload iframe with new mute parameter
+  const toggleMute = () => {
+    setIsMuted(!isMuted)
+    
+    // Update the iframe src to apply mute/unmute
+    if (iframeRef.current && currentVideoId) {
+      const currentSrc = iframeRef.current.src
+      const newSrc = currentSrc.replace(
+        isMuted ? 'mute=1' : 'mute=0', 
+        isMuted ? 'mute=0' : 'mute=1'
+      )
+      iframeRef.current.src = newSrc
+    }
   }
 
   // Fallback slideshow effect
@@ -113,12 +132,13 @@ export function YoutubeEmbed() {
   const handleIframeLoad = () => {
     console.log("YouTube iframe loaded")
     setVideoLoaded(true)
+    setVideoError(false)
   }
 
   // Handle iframe error
   const handleIframeError = () => {
     console.error("YouTube iframe failed to load")
-    setFallbackActive(true)
+    setVideoError(true)
   }
 
   // Render the fallback slideshow
@@ -174,17 +194,58 @@ export function YoutubeEmbed() {
   return (
     <>
       {!fallbackActive ? (
-        <iframe
-          ref={iframeRef}
-          src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${currentVideoId}`}
-          title="Relaxing Videos"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          className="w-full h-full"
-          onLoad={handleIframeLoad}
-          onError={handleIframeError}
-        ></iframe>
+        <div className="relative w-full h-full">
+          <iframe
+            ref={iframeRef}
+            src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1&mute=1&controls=1&showinfo=0&rel=0&loop=1&playlist=${currentVideoId}`}
+            title="Relaxing Videos"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full"
+            onLoad={handleIframeLoad}
+            onError={handleIframeError}
+          ></iframe>
+          
+          {/* Video info overlay */}
+          <div className="absolute top-4 left-4 right-4 bg-black/50 text-white p-2 rounded backdrop-blur-sm text-sm flex justify-between items-center">
+            <p>SoothingRelaxation - Relaxing Piano Music</p>
+            
+            {/* Skip button for unavailable videos */}
+            <button
+              onClick={tryDifferentVideo}
+              className="p-1 hover:bg-white/20 rounded-full transition-colors"
+              aria-label="Skip to another video"
+              title="Try another video"
+            >
+              <SkipForward size={18} />
+            </button>
+          </div>
+          
+          {/* Video error message */}
+          {videoError && (
+            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
+              <p className="text-white mb-4">הסרטון אינו זמין</p>
+              <button
+                onClick={tryDifferentVideo}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+              >
+                נסה סרטון אחר
+              </button>
+            </div>
+          )}
+          
+          {/* Mute/Unmute Button */}
+          {videoLoaded && !videoError && (
+            <button 
+              onClick={toggleMute}
+              className="absolute bottom-4 right-4 p-3 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm transition-colors"
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? <Volume2 size={20} /> : <VolumeX size={20} />}
+            </button>
+          )}
+        </div>
       ) : (
         renderFallbackSlideshow()
       )}
