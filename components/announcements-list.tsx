@@ -64,9 +64,9 @@ const getPriorityColor = (priority: string) => {
 const defaultAnnouncements: Announcement[] = [
   {
     id: 1,
-    title: "פינוי אשפה",
-    content: "תזכורת: פינוי אשפה מתבצע בימים א', ג', ה'. נא להוציא את האשפה עד השעה 20:00.",
-    icon: "trash",
+    title: "המקום מצולם",
+    content: "המקום מצולם ומוקלט 24 שעות ביממה",
+    icon: "camera",
     priority: "medium",
   },
   {
@@ -74,13 +74,13 @@ const defaultAnnouncements: Announcement[] = [
     title: "פינוי גזם",
     content: "פינוי גזם ניתן להוציא החל מיום א׳ ב20:00 בערב ועד ליום ב׳ בבוקר",
     icon: "tools",
-    priority: "high",
+    priority: "low",
   },
   {
     id: 3,
     title: "ניקיון הבנין",
     content: "דיירים יקרים נא לשמור על ניקיון הבנין.",
-    icon: "elevator",
+    icon: "clean",
     priority: "high",
   },
 ];
