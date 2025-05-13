@@ -78,8 +78,8 @@ const defaultAnnouncements: Announcement[] = [
   },
   {
     id: 3,
-    title: "ניקיון הבנין",
-    content: "דיירים יקרים נא לשמור על ניקיון הבנין.",
+    title: "ניקיון הבניין",
+    content: "דיירים יקרים נא לשמור על ניקיון הבניין.",
     icon: "clean",
     priority: "high",
   },
