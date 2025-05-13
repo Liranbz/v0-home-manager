@@ -24,17 +24,17 @@ export function YoutubeEmbed() {
 
   // Updated reliable video IDs from SoothingRelaxation
   const relaxingVideoIds = [
-    "qFZKK3OXbDw", // Piano with Nature Sounds
-    "lCOF9LN-Opo", // Relaxing Sleep Music
-    "HSOtku1j600", // Beautiful Piano Music
-    "WJ3-F02-F_Y", // Relaxing Music with Beautiful Nature
-    "WZKW2Hq2fks", // Meditation Music with Nature
-    "lE6RYpe9IT0", // Relaxing Music with Nature
-    "sjkrrmBnpGE", // Beautiful Piano Music
-    "hlWiI4xVXKY", // Relaxing Music & Soft Rain
-    "77ZozI0rw7w", // Relaxing Sleep Music
-    "y7e-GC6oGhg", // Relaxing Music with Water Sounds
-    "vwrYbdAypUU"  // Relaxing Piano Music & Rain Sounds
+    "1ZYbU82GVz4", // Piano with Nature Sounds
+    "z-qigE1ym40", // Relaxing Sleep Music
+    "prfZFyp4XZk", // Beautiful Piano Music
+    "-CDH2fN7XXA", // Relaxing Music with Beautiful Nature
+    "_kvEuReNgsw", // Meditation Music with Nature
+    // "lE6RYpe9IT0", // Relaxing Music with Nature
+    // "sjkrrmBnpGE", // Beautiful Piano Music
+    // "hlWiI4xVXKY", // Relaxing Music & Soft Rain
+    // "77ZozI0rw7w", // Relaxing Sleep Music
+    // "y7e-GC6oGhg", // Relaxing Music with Water Sounds
+    // "vwrYbdAypUU"  // Relaxing Piano Music & Rain Sounds
   ]
 
   // Select a random video on component mount

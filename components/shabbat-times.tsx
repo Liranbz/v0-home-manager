@@ -149,7 +149,7 @@ export function ShabbatTimes() {
               width: "100%",
               height: "100%",
               objectFit: "contain",
-              transform: "scale(1.6)",
+              transform: "scale(1.1)",
               filter: "saturate(1)",
               position: "absolute",
               top: -50,
