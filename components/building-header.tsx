@@ -39,14 +39,14 @@ export function BuildingHeader({ buildingName }: BuildingHeaderProps) {
 
   return (
     <div className="flex flex-col items-center text-center">
-      <h1 className="text-3xl font-bold mb-2">רחוב הגלעד 3 נתניה</h1>
-      <div className="text-2xl font-medium">{currentTime}</div>
-      <div className="text-lg text-gray-600 mb-4">{currentDate}</div>
+      <h1 className="text-6xl font-bold mb-3">רחוב הגלעד 3 נתניה</h1>
+      <div className="text-5xl font-medium mb-1">{currentTime}</div>
+      <div className="text-4xl text-gray-600 mb-5">{currentDate}</div>
 
-      <div className="flex items-center gap-2 text-2xl font-bold">
-        <Sun size={32} className="text-yellow-500" />
+      <div className="flex items-center gap-3 text-5xl font-bold">
+        <Sun size={40} className="text-yellow-500" />
         <span>34°C</span>
-        <span className="text-lg font-normal text-gray-600">בהיר</span>
+        <span className="text-3xl font-normal text-gray-600">בהיר</span>
       </div>
     </div>
   )

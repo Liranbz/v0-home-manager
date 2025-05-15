@@ -201,7 +201,7 @@ export function AnnouncementsList() {
   return (
     <div className="flex flex-col h-full">
       <div className="bg-gray-100 p-4 border-b flex justify-between items-center">
-        <h2 className="text-xl font-bold flex items-center gap-2">
+        <h2 className="text-3xl font-bold flex items-center gap-2">
           <AlertCircle className="h-5 w-5 text-red-500" />
           הודעות חשובות
         </h2>
@@ -316,16 +316,16 @@ export function AnnouncementsList() {
           </div>
         )}
         
-        <div className="space-y-4">
+        <div className="space-y-2">
           {announcements.length === 0 ? (
-            <div className="text-center p-8 text-gray-500">
+            <div className="text-center p-4 text-gray-500">
               אין הודעות להצגה
             </div>
           ) : (
             announcements.map((announcement) => (
               <div
                 key={announcement.id}
-                className={`p-4 rounded-lg border ${
+                className={`p-3 rounded-lg border ${
                   announcement.priority === "high"
                     ? "border-red-200 bg-red-50"
                     : announcement.priority === "medium"
@@ -333,17 +333,17 @@ export function AnnouncementsList() {
                     : "border-gray-200 bg-gray-50"
                 }`}
               >
-                <div className="flex items-start gap-3">
-                  <div className="mt-1">
+                <div className="flex items-start gap-2">
+                  <div className="mt-0">
                     {getIconByName(announcement.icon, getPriorityColor(announcement.priority))}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold">{announcement.title}</h3>
-                    <p className="text-gray-700">{announcement.content}</p>
+                    <h3 className="text-2xl font-bold mb-1">{announcement.title}</h3>
+                    <p className="text-xl text-gray-700">{announcement.content}</p>
                   </div>
                   
                   {isEditing && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       <button 
                         onClick={() => handleEdit(announcement)}
                         className="p-1 bg-blue-100 hover:bg-blue-200 rounded"

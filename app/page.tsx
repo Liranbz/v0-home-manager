@@ -8,24 +8,25 @@ import { NewsTicker } from "@/components/news-ticker"
 
 export default function LobbyDashboard() {
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div 
+      className="flex flex-col h-screen bg-gray-50 overflow-hidden"
+      style={{ 
+        transform: "scale(0.98)", 
+        transformOrigin: "center center",
+        maxWidth: "100vw",
+        maxHeight: "100vh"
+      }}
+    >
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Section - YouTube Video (60%) */}
-        <div className="w-3/5 p-4">
-          <Card className="h-full overflow-hidden rounded-xl shadow-lg">
-            <YoutubeEmbed />
-          </Card>
-        </div>
-
         {/* Right Section - Building Info (40%) */}
-        <div className="w-2/5 p-4 flex flex-col gap-4">
+        <div className="w-2/5 p-3 flex flex-col gap-0">
           {/* Top Area - Building Name & Weather */}
-          <Card className="p-6 shadow-md rounded-xl">
+          <Card className="p-1 shadow-md rounded-xl mb-1">
             <BuildingHeader buildingName="הגלעד 3 נתניה" />
           </Card>
 
-          {/* Middle Area - Announcements */}
-          <div className="flex-1 perspective-1000">
+          {/* Middle Area - Announcements - Further reduced height */}
+          <div className="flex-1 perspective-1000 max-h-[35vh]">
             <Card
               className="flex-1 h-full shadow-lg rounded-xl overflow-hidden book-style relative transform-gpu"
               style={{
@@ -41,21 +42,28 @@ export default function LobbyDashboard() {
               {/* Page corner fold effect */}
               <div className="absolute top-0 right-0 w-[20px] h-[20px] bg-gradient-to-bl from-gray-200 to-white transform rotate-[-5deg] origin-top-right"></div>
 
-              <div className="h-full pt-1 pl-4">
+              <div className="h-full pt-1 pl-4 overflow-auto">
                 <AnnouncementsList />
               </div>
             </Card>
           </div>
 
-          {/* Bottom Area - Shabbat Times */}
-          <Card className="p-6 shadow-md rounded-xl">
+          {/* Bottom Area - Shabbat Times - Further increased height */}
+          <Card className="p-2 shadow-md rounded-xl mt-1 min-h-[42vh]">
             <ShabbatTimes />
+          </Card>
+        </div>
+
+        {/* Left Section - YouTube Video (60%) */}
+        <div className="w-3/5 p-3">
+          <Card className="h-full overflow-hidden rounded-xl shadow-lg">
+            <YoutubeEmbed />
           </Card>
         </div>
       </div>
 
       {/* Bottom Ticker */}
-      <div className="h-16 bg-white border-t">
+      <div className="h-14 bg-white border-t">
         <NewsTicker />
       </div>
     </div>
