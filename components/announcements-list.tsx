@@ -201,8 +201,8 @@ export function AnnouncementsList() {
   return (
     <div className="flex flex-col h-full">
       <div className="bg-gray-100 p-4 border-b flex justify-between items-center">
-        <h2 className="text-3xl font-bold flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-red-500" />
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-red-500" />
           הודעות חשובות
         </h2>
         
@@ -211,43 +211,43 @@ export function AnnouncementsList() {
             <>
               <button 
                 onClick={handleAddNew}
-                className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+                className="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs"
               >
-                <PlusCircle className="h-4 w-4" />
+                <PlusCircle className="h-3 w-3" />
                 <span>הוספה</span>
               </button>
               <button 
                 onClick={toggleEditMode}
-                className="flex items-center gap-1 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm"
+                className="flex items-center gap-1 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3 w-3" />
                 <span>סיום עריכה</span>
               </button>
             </>
           ) : (
             <button 
               onClick={toggleEditMode}
-              className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+              className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs"
             >
-              <Edit className="h-4 w-4" />
+              <Edit className="h-3 w-3" />
               <span>עריכה</span>
             </button>
           )}
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-3">
         {showForm && (
-          <div className="mb-4 p-4 border rounded-lg bg-white">
-            <h3 className="text-lg font-bold mb-2">
+          <div className="mb-3 p-3 border rounded-lg bg-white">
+            <h3 className="text-base font-bold mb-2">
               {editingAnnouncement ? "עריכת הודעה" : "הודעה חדשה"}
             </h3>
             
-            <div className="mb-3">
+            <div className="mb-2">
               <label className="block text-sm font-bold mb-1">כותרת</label>
               <input 
                 type="text" 
-                className="w-full p-2 border rounded" 
+                className="w-full p-1 border rounded text-sm" 
                 value={formTitle} 
                 onChange={(e) => setFormTitle(e.target.value)}
                 placeholder="כותרת ההודעה"
@@ -255,10 +255,10 @@ export function AnnouncementsList() {
               />
             </div>
             
-            <div className="mb-3">
-              <label className="block text-sm font-bold mb-1">תוכן</label>
+            <div className="mb-2">
+              <label className="block text-xs font-bold mb-1">תוכן</label>
               <textarea 
-                className="w-full p-2 border rounded" 
+                className="w-full p-1 border rounded text-sm" 
                 value={formContent} 
                 onChange={(e) => setFormContent(e.target.value)}
                 placeholder="תוכן ההודעה"
@@ -267,11 +267,11 @@ export function AnnouncementsList() {
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="grid grid-cols-2 gap-2 mb-2">
               <div>
-                <label className="block text-sm font-bold mb-1">סמל</label>
+                <label className="block text-xs font-bold mb-1">סמל</label>
                 <select 
-                  className="w-full p-2 border rounded" 
+                  className="w-full p-1 border rounded text-sm" 
                   value={formIcon} 
                   onChange={(e) => setFormIcon(e.target.value)}
                   dir="rtl"
@@ -284,9 +284,9 @@ export function AnnouncementsList() {
               </div>
               
               <div>
-                <label className="block text-sm font-bold mb-1">דחיפות</label>
+                <label className="block text-xs font-bold mb-1">דחיפות</label>
                 <select 
-                  className="w-full p-2 border rounded" 
+                  className="w-full p-1 border rounded text-sm" 
                   value={formPriority} 
                   onChange={(e) => setFormPriority(e.target.value as "high" | "medium" | "low")}
                   dir="rtl"
@@ -301,15 +301,15 @@ export function AnnouncementsList() {
             <div className="flex justify-end gap-2">
               <button 
                 onClick={handleCancel}
-                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+                className="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-xs"
               >
                 ביטול
               </button>
               <button 
                 onClick={handleSave}
-                className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded flex items-center gap-1"
+                className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-xs flex items-center gap-1"
               >
-                <Save className="h-4 w-4" />
+                <Save className="h-3 w-3" />
                 שמירה
               </button>
             </div>
@@ -318,14 +318,14 @@ export function AnnouncementsList() {
         
         <div className="space-y-2">
           {announcements.length === 0 ? (
-            <div className="text-center p-4 text-gray-500">
+            <div className="text-center p-3 text-gray-500 text-sm">
               אין הודעות להצגה
             </div>
           ) : (
             announcements.map((announcement) => (
               <div
                 key={announcement.id}
-                className={`p-3 rounded-lg border ${
+                className={`p-2 rounded-lg border ${
                   announcement.priority === "high"
                     ? "border-red-200 bg-red-50"
                     : announcement.priority === "medium"
@@ -338,7 +338,7 @@ export function AnnouncementsList() {
                     {getIconByName(announcement.icon, getPriorityColor(announcement.priority))}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold mb-1">{announcement.title}</h3>
+                    <h3 className="text-2xl font-bold mb-0.5">{announcement.title}</h3>
                     <p className="text-xl text-gray-700">{announcement.content}</p>
                   </div>
                   
@@ -349,14 +349,14 @@ export function AnnouncementsList() {
                         className="p-1 bg-blue-100 hover:bg-blue-200 rounded"
                         title="ערוך"
                       >
-                        <Edit className="h-4 w-4 text-blue-600" />
+                        <Edit className="h-3 w-3 text-blue-600" />
                       </button>
                       <button 
                         onClick={() => handleDelete(announcement.id)}
                         className="p-1 bg-red-100 hover:bg-red-200 rounded"
                         title="מחק"
                       >
-                        <Trash2 className="h-4 w-4 text-red-600" />
+                        <Trash2 className="h-3 w-3 text-red-600" />
                       </button>
                     </div>
                   )}
