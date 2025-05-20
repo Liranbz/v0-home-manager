@@ -42,23 +42,23 @@ export function BuildingHeader({ buildingName }: BuildingHeaderProps) {
     
     switch (iconName) {
       case 'sun':
-        return <Sun size={50} className="text-yellow-500 drop-shadow-glow-yellow" />;
+        return <Sun size={35} className="text-yellow-500 drop-shadow-glow-yellow" />;
       case 'cloud-sun':
-        return <CloudSun size={50} className="text-gray-500 drop-shadow-glow-gray" />;
+        return <CloudSun size={35} className="text-gray-500 drop-shadow-glow-gray" />;
       case 'cloud':
-        return <Cloud size={50} className="text-gray-500 drop-shadow-glow-gray" />;
+        return <Cloud size={35} className="text-gray-500 drop-shadow-glow-gray" />;
       case 'cloud-fog':
-        return <CloudFog size={50} className="text-gray-500 drop-shadow-glow-gray" />;
+        return <CloudFog size={35} className="text-gray-500 drop-shadow-glow-gray" />;
       case 'cloud-rain':
-        return <CloudRain size={50} className="text-blue-500 drop-shadow-glow-blue" />;
+        return <CloudRain size={35} className="text-blue-500 drop-shadow-glow-blue" />;
       case 'cloud-snow':
-        return <CloudSnow size={50} className="text-blue-300 drop-shadow-glow-blue" />;
+        return <CloudSnow size={35} className="text-blue-300 drop-shadow-glow-blue" />;
       case 'cloud-lightning':
-        return <CloudLightning size={50} className="text-yellow-600 drop-shadow-glow-yellow" />;
+        return <CloudLightning size={35} className="text-yellow-600 drop-shadow-glow-yellow" />;
       default:
         return isDay ? 
-          <Sun size={50} className="text-yellow-500 drop-shadow-glow-yellow" /> : 
-          <Moon size={50} className="text-blue-300 drop-shadow-glow-blue" />;
+          <Sun size={35} className="text-yellow-500 drop-shadow-glow-yellow" /> : 
+          <Moon size={35} className="text-blue-300 drop-shadow-glow-blue" />;
     }
   };
 
@@ -626,7 +626,7 @@ export function BuildingHeader({ buildingName }: BuildingHeaderProps) {
       <div className="relative z-20 w-full h-full flex flex-col items-center justify-center py-6">
         {/* Building name with text shadow */}
         <h1 
-          className="text-6xl font-bold mb-3 text-white tracking-tight" 
+          className="text-4xl font-bold mb-2 text-white tracking-tight" 
           style={{ 
             textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.2)",
             animation: "fadeInDown 0.5s ease-out"
@@ -637,7 +637,7 @@ export function BuildingHeader({ buildingName }: BuildingHeaderProps) {
         
         {/* Time display with glow */}
         <div 
-          className="text-8xl font-medium mb-1 text-white" 
+          className="text-6xl font-medium mb-1 text-white" 
           style={{ 
             textShadow: "0 0 10px rgba(255, 255, 255, 0.7), 0 0 40px rgba(255, 255, 255, 0.3)",
             animation: "pulse 1.5s infinite ease-in-out"
@@ -648,7 +648,7 @@ export function BuildingHeader({ buildingName }: BuildingHeaderProps) {
         
         {/* Date display */}
         <div 
-          className="text-4xl text-white opacity-80 mb-5"
+          className="text-2xl text-white opacity-80 mb-3"
           style={{ textShadow: "1px 1px 8px rgba(0, 0, 0, 0.3)" }}
         >
           {currentDate}
@@ -656,7 +656,7 @@ export function BuildingHeader({ buildingName }: BuildingHeaderProps) {
 
         {/* Weather info with enhanced glass effect */}
         <div 
-          className="flex items-center gap-4 text-5xl font-bold py-4 px-8 rounded-2xl backdrop-blur-xl"
+          className="flex items-center gap-3 text-3xl font-bold py-2 px-6 rounded-2xl backdrop-blur-xl"
           style={{ 
             background: "rgba(255, 255, 255, 0.15)",
             boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.2)",
@@ -667,7 +667,7 @@ export function BuildingHeader({ buildingName }: BuildingHeaderProps) {
           {weather.loading ? (
             <span className="text-white opacity-80">טוען...</span>
           ) : weather.error ? (
-            <span className="text-red-300 text-3xl">שגיאה בטעינת מזג האוויר</span>
+            <span className="text-red-300 text-xl">שגיאה בטעינת מזג האוויר</span>
           ) : (
             <>
               <div className="animate-weather-icon">
@@ -676,7 +676,7 @@ export function BuildingHeader({ buildingName }: BuildingHeaderProps) {
               <span className="text-white" style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)" }}>
                 {weather.temperature}°C
               </span>
-              <span className="text-3xl font-normal text-white opacity-80">
+              <span className="text-xl font-normal text-white opacity-80">
                 {weather.description}
               </span>
             </>

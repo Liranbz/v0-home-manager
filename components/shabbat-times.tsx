@@ -202,69 +202,69 @@ export function ShabbatTimes() {
       
       {/* Content with better vertical distribution */}
       <div className="relative z-10 w-full flex flex-col items-center">
-        <h2 className="text-6xl font-extrabold mb-2 text-amber-800">זמני שבת</h2>
+        <h2 className="text-4xl font-extrabold mb-1 text-amber-800">זמני שבת</h2>
         
         {/* City selector row - more compact */}
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-1">
           <div 
-            className="flex items-center gap-1 cursor-pointer bg-amber-100 px-3 py-1 rounded-full"
+            className="flex items-center gap-1 cursor-pointer bg-amber-100 px-2 py-1 rounded-full"
             onClick={toggleCity}
           >
-            <MapPinIcon className="h-5 w-5 text-amber-700" />
-            <span className="text-2xl font-bold text-amber-800">{shabbatTimes.location}</span>
-            <span className="text-sm bg-amber-200 px-1.5 py-0.5 rounded-full text-amber-800">לחץ להחלפה</span>
+            <MapPinIcon className="h-4 w-4 text-amber-700" />
+            <span className="text-lg font-bold text-amber-800">{shabbatTimes.location}</span>
+            <span className="text-xs bg-amber-200 px-1 py-0.5 rounded-full text-amber-800">לחץ להחלפה</span>
           </div>
           
           {/* Manual refresh button */}
           <button 
             onClick={refreshData}
             disabled={isLoading}
-            className="flex items-center justify-center bg-amber-100 p-1.5 rounded-full hover:bg-amber-200 transition-colors"
+            className="flex items-center justify-center bg-amber-100 p-1 rounded-full hover:bg-amber-200 transition-colors"
             title="רענן זמני שבת"
           >
-            <RefreshCw className={`h-5 w-5 text-amber-700 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 text-amber-700 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
         
         {/* Last refreshed info - smaller */}
         {shabbatTimes.lastRefreshed && (
-          <div className="text-xl text-amber-700 mb-1">
+          <div className="text-sm text-amber-700 mb-0.5">
             עודכן לאחרונה: {shabbatTimes.lastRefreshed.toLocaleDateString('he-IL')}
           </div>
         )}
         
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-4">
-            <Loader2 className="h-12 w-12 text-amber-700 animate-spin mb-2" />
-            <p className="text-2xl text-amber-900">טוען זמני שבת...</p>
+          <div className="flex flex-col items-center justify-center py-2">
+            <Loader2 className="h-8 w-8 text-amber-700 animate-spin mb-1" />
+            <p className="text-lg text-amber-900">טוען זמני שבת...</p>
           </div>
         ) : error ? (
-          <div className="text-red-600 text-xl font-bold mb-2">{error}</div>
+          <div className="text-red-600 text-lg font-bold mb-1">{error}</div>
         ) : (
-          <div className="flex flex-col items-center justify-center space-y-2">
+          <div className="flex flex-col items-center justify-center space-y-1">
             {/* Candle lighting and Havdalah times */}
-            <div className="flex justify-center gap-16 mt-2 w-full">
+            <div className="flex justify-center gap-10 mt-1 w-full">
               <div className="flex flex-col items-center">
-                <div className="flex items-center mb-1">
-                  <Flame className="h-10 w-10 text-orange-500" />
+                <div className="flex items-center mb-0.5">
+                  <Flame className="h-7 w-7 text-orange-500" />
                 </div>
-                <div className="text-4xl font-bold text-amber-900">הדלקת נרות</div>
-                <div className="text-5xl font-bold text-amber-900">{shabbatTimes.candleLighting}</div>
+                <div className="text-xl font-bold text-amber-900">הדלקת נרות</div>
+                <div className="text-3xl font-bold text-amber-900">{shabbatTimes.candleLighting}</div>
               </div>
 
               <div className="flex flex-col items-center">
-                <div className="flex items-center mb-1">
-                  <Sunset className="h-10 w-10 text-purple-500" />
+                <div className="flex items-center mb-0.5">
+                  <Sunset className="h-7 w-7 text-purple-500" />
                 </div>
-                <div className="text-4xl font-bold text-amber-900">צאת שבת</div>
-                <div className="text-5xl font-bold text-amber-900">{shabbatTimes.havdalah}</div>
+                <div className="text-xl font-bold text-amber-900">צאת שבת</div>
+                <div className="text-3xl font-bold text-amber-900">{shabbatTimes.havdalah}</div>
               </div>
             </div>
 
             {/* Parasha info */}
-            <div className="mt-2 mb-0 text-4xl font-bold text-amber-800">
-              <div className="flex items-center justify-center gap-2">
-                <CalendarIcon className="h-8 w-8" />
+            <div className="mt-1 mb-0 text-xl font-bold text-amber-800">
+              <div className="flex items-center justify-center gap-1">
+                <CalendarIcon className="h-5 w-5" />
                 <span>פרשת השבוע: <span className="font-black">{shabbatTimes.parasha}</span></span>
               </div>
             </div>
