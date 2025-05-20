@@ -9,12 +9,19 @@ import { NewsTicker } from "@/components/news-ticker"
 export default function LobbyDashboard() {
   return (
     <div 
-      className="flex flex-col h-screen bg-gray-50 overflow-hidden"
+      className="flex flex-col h-screen overflow-hidden"
       style={{ 
-        transform: "scale(0.98)", 
+        transform: "scale(0.9)", 
         transformOrigin: "center center",
         maxWidth: "100vw",
-        maxHeight: "100vh"
+        maxHeight: "100vh",
+        backgroundColor: "rgba(0, 0, 0, 0.1)",
+        backdropFilter: "blur(10px)",
+        borderRadius: "16px",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.2)",
+        margin: "2vh auto",
+        width: "96vw"
       }}
     >
       <div className="flex flex-1 overflow-hidden">
@@ -49,7 +56,7 @@ export default function LobbyDashboard() {
           </div>
 
           {/* Bottom Area - Shabbat Times - Further increased height */}
-          <Card className="p-2 shadow-md rounded-xl mt-1 min-h-[42vh]">
+          <Card className="p-0 shadow-md rounded-xl mt-1 flex-grow" style={{ maxHeight: "38vh" }}>
             <ShabbatTimes />
           </Card>
         </div>

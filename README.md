@@ -10,6 +10,24 @@
 This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
 Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
 
+## Features
+
+- Building management announcements with priority levels
+- Real-time weather data for Netanya, Israel using Open-Meteo API (no API key required)
+- Responsive design for both desktop and mobile
+- Hebrew language support with RTL layout
+
+## Weather Feature
+
+The application displays current temperature and weather conditions for Netanya, Israel using the [Open-Meteo API](https://open-meteo.com/).
+
+Features:
+- Real-time temperature in Celsius
+- Weather condition descriptions in Hebrew
+- Visual weather icons
+- Auto-refreshes every 30 minutes
+- No API key required
+
 ## Deployment
 
 Your project is live at:

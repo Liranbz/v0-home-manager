@@ -18,7 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="he" dir="rtl">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className} bg-gradient-to-br from-indigo-900 via-blue-800 to-purple-900`} style={{
+        minHeight: "100vh",
+        margin: 0,
+        backgroundAttachment: "fixed"
+      }}>{children}</body>
     </html>
   )
 }
