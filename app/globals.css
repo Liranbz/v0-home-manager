@@ -7,6 +7,13 @@
   --background-rgb: 245, 245, 245;
 }
 
+/* Scale the whole UI with the screen height. Tailwind sizes are rem-based,
+   so this keeps text, spacing and cards at the same physical size whatever
+   the browser zoom or TV resolution (16px at a 1080px-tall viewport). */
+html {
+  font-size: clamp(9px, calc(100vh / 67.5), 26px);
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));

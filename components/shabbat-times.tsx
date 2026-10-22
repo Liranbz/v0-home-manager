@@ -126,7 +126,7 @@ export function ShabbatTimes() {
       </div>
 
       <div className="relative z-10 w-full flex flex-col items-center">
-        <h2 className="text-4xl font-extrabold mb-1 text-amber-800">זמני שבת</h2>
+        <h2 className="text-5xl font-extrabold mb-1 text-amber-800">זמני שבת</h2>
 
         {/* City selector row */}
         <div className="flex items-center gap-2 mb-1">
@@ -161,25 +161,25 @@ export function ShabbatTimes() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center space-y-1">
-            <div className="flex justify-center gap-10 mt-1 w-full">
+            <div className="flex justify-center gap-14 mt-1 w-full">
               <div className="flex flex-col items-center">
                 <div className="flex items-center mb-0.5">
-                  <Flame className="h-7 w-7 text-orange-500" />
+                  <Flame className="h-9 w-9 text-orange-500" />
                 </div>
-                <div className="text-xl font-bold text-amber-900">הדלקת נרות</div>
-                <div className="text-3xl font-bold text-amber-900">{candleLighting}</div>
+                <div className="text-2xl font-bold text-amber-900">הדלקת נרות</div>
+                <div className="text-6xl font-black text-amber-900 leading-tight">{candleLighting}</div>
               </div>
 
               <div className="flex flex-col items-center">
                 <div className="flex items-center mb-0.5">
-                  <Sunset className="h-7 w-7 text-purple-500" />
+                  <Sunset className="h-9 w-9 text-purple-500" />
                 </div>
-                <div className="text-xl font-bold text-amber-900">צאת שבת</div>
-                <div className="text-3xl font-bold text-amber-900">{havdalah}</div>
+                <div className="text-2xl font-bold text-amber-900">צאת שבת</div>
+                <div className="text-6xl font-black text-amber-900 leading-tight">{havdalah}</div>
               </div>
             </div>
 
-            <div className="mt-1 mb-0 text-xl font-bold text-amber-800">
+            <div className="mt-1 mb-0 text-2xl font-bold text-amber-800">
               <div className="flex items-center justify-center gap-1">
                 <CalendarIcon className="h-5 w-5" />
                 <span>
