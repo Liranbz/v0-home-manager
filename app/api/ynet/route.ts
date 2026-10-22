@@ -1,72 +1,86 @@
-import { NextResponse } from 'next/server';
-import Parser from 'rss-parser';
+import { NextResponse } from "next/server"
+import Parser from "rss-parser"
 
-// Define the structure for RSS items
-type CustomItem = {
-  title: string;
-  link: string;
-  pubDate: string;
-  content: string;
-  contentSnippet: string;
-  guid: string;
-  categories: string[];
-  isoDate: string;
-};
+export const dynamic = "force-dynamic"
 
-// Create a custom parser instance
-const parser: Parser<any, CustomItem> = new Parser({
+const FEED_URLS = [
+  "https://www.ynet.co.il/Integration/StoryRss184.xml", // מבזקים
+  "https://www.ynet.co.il/Integration/StoryRss2.xml", // חדשות (fallback)
+]
+
+const MAX_HEADLINES = 12
+const FETCH_TIMEOUT_MS = 10_000
+const USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+
+const parser = new Parser({
   customFields: {
     item: [
-      ['title', 'title'],
-      ['link', 'link'],
-      ['pubDate', 'pubDate'],
-      ['description', 'content'],
-      ['guid', 'guid'],
+      ["title", "title"],
+      ["link", "link"],
+      ["pubDate", "pubDate"],
+      ["guid", "guid"],
     ],
   },
-});
+})
 
-// Maximum number of headlines to return
-const MAX_HEADLINES = 10;
+const stripHtml = (s: string) => s.replace(/<\/?[^>]+(>|$)/g, "").trim()
+
+async function fetchFeedText(url: string): Promise<string> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": USER_AGENT, Accept: "application/rss+xml, application/xml, text/xml, */*" },
+      signal: controller.signal,
+      cache: "no-store",
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status} from ${url}`)
+    return await res.text()
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 export async function GET() {
-  try {
-    // Fetch the RSS feed from Ynet
-    const feed = await parser.parseURL('https://www.ynet.co.il/Integration/StoryRss184.xml');
-    
-    // Extract and process headlines
-    const headlines = feed.items
-      .slice(0, MAX_HEADLINES)
-      .map((item: CustomItem) => {
-        // Clean the title by removing HTML tags
-        const cleanTitle = item.title.replace(/<\/?[^>]+(>|$)/g, "");
-        
-        return {
-          title: cleanTitle,
-          link: item.link,
-          pubDate: item.pubDate,
-          guid: item.guid
-        };
-      });
-    
-    // Return the processed headlines as JSON
-    return NextResponse.json({ 
-      success: true, 
-      headlines,
-      source: 'Ynet News',
-      lastUpdated: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error fetching Ynet RSS feed:', error);
-    
-    // Return an error response
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch news headlines',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+  const errors: string[] = []
+
+  for (const url of FEED_URLS) {
+    try {
+      const xml = await fetchFeedText(url)
+      const feed = await parser.parseString(xml)
+
+      const headlines = (feed.items ?? [])
+        .filter((item) => item.title)
+        .slice(0, MAX_HEADLINES)
+        .map((item) => ({
+          title: stripHtml(String(item.title)),
+          link: item.link ?? "",
+          pubDate: item.pubDate ?? item.isoDate ?? "",
+          guid: item.guid ?? item.link ?? "",
+        }))
+
+      if (headlines.length === 0) throw new Error(`No items in ${url}`)
+
+      return NextResponse.json(
+        {
+          success: true,
+          headlines,
+          source: "Ynet News",
+          feed: url,
+          lastUpdated: new Date().toISOString(),
+        },
+        { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=600" } },
+      )
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      errors.push(msg)
+      console.error("Ynet feed failed:", url, msg)
+    }
   }
-} 
+
+  return NextResponse.json(
+    { success: false, error: "Failed to fetch news headlines", details: errors },
+    { status: 502, headers: { "Cache-Control": "no-store" } },
+  )
+}

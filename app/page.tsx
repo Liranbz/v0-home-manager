@@ -1,4 +1,5 @@
 "use client"
+import { useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { YoutubeEmbed } from "@/components/youtube-embed"
 import { BuildingHeader } from "@/components/building-header"
@@ -6,48 +7,56 @@ import { AnnouncementsList } from "@/components/announcements-list"
 import { ShabbatTimes } from "@/components/shabbat-times"
 import { NewsTicker } from "@/components/news-ticker"
 
+// Hard-reload the page once a day at 03:30 local time so the lobby TV recovers
+// from browser memory leaks and picks up new deployments.
+const RELOAD_HOUR = 3
+const RELOAD_MINUTE = 30
+
+function msUntilNextReload(): number {
+  const now = new Date()
+  const next = new Date(now)
+  next.setHours(RELOAD_HOUR, RELOAD_MINUTE, 0, 0)
+  if (next.getTime() <= now.getTime()) {
+    next.setDate(next.getDate() + 1)
+  }
+  return next.getTime() - now.getTime()
+}
+
 export default function LobbyDashboard() {
+  useEffect(() => {
+    const timer = setTimeout(() => window.location.reload(), msUntilNextReload())
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
-    <div 
-      className="flex flex-col h-screen overflow-hidden"
-      style={{ 
-        transform: "scale(0.9)", 
-        transformOrigin: "center center",
-        maxWidth: "100vw",
-        maxHeight: "100vh",
-        backgroundColor: "rgba(0, 0, 0, 0.1)",
-        backdropFilter: "blur(10px)",
-        borderRadius: "16px",
+    <div
+      className="flex flex-col h-[96vh] my-[2vh] w-[96vw] mx-auto overflow-hidden rounded-2xl"
+      style={{
+        backgroundColor: "rgba(0, 0, 0, 0.15)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
         boxShadow: "0 4px 30px rgba(0, 0, 0, 0.2)",
-        margin: "2vh auto",
-        width: "96vw"
       }}
     >
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Right Section - Building Info (40%) */}
-        <div className="w-2/5 p-3 flex flex-col gap-0">
+        <div className="w-2/5 p-3 flex flex-col gap-0 min-h-0">
           {/* Top Area - Building Name & Weather */}
           <Card className="p-1 shadow-md rounded-xl mb-1">
             <BuildingHeader buildingName="הגלעד 3 נתניה" />
           </Card>
 
-          {/* Middle Area - Announcements - Further reduced height */}
-          <div className="flex-1 perspective-1000 max-h-[35vh]">
+          {/* Middle Area - Announcements */}
+          <div className="flex-1 min-h-0 max-h-[35vh]">
             <Card
-              className="flex-1 h-full shadow-lg rounded-xl overflow-hidden book-style relative transform-gpu"
+              className="h-full shadow-lg rounded-xl overflow-hidden relative"
               style={{
                 background: "linear-gradient(to right, #f1f1f1 0%, #ffffff 3%, #ffffff 97%, #dddddd 100%)",
                 boxShadow:
                   "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.05), 5px 5px 15px rgba(0, 0, 0, 0.1)",
-                transformStyle: "preserve-3d",
               }}
             >
               {/* Book binding effect */}
               <div className="absolute left-0 top-0 bottom-0 w-[10px] bg-gradient-to-r from-amber-700 to-amber-500 rounded-l-lg"></div>
-
-              {/* Page corner fold effect */}
-              <div className="absolute top-0 right-0 w-[20px] h-[20px] bg-gradient-to-bl from-gray-200 to-white transform rotate-[-5deg] origin-top-right"></div>
 
               <div className="h-full pt-1 pl-4 overflow-auto">
                 <AnnouncementsList />
@@ -55,14 +64,14 @@ export default function LobbyDashboard() {
             </Card>
           </div>
 
-          {/* Bottom Area - Shabbat Times - Further increased height */}
-          <Card className="p-0 shadow-md rounded-xl mt-1 flex-grow" style={{ maxHeight: "38vh" }}>
+          {/* Bottom Area - Shabbat Times */}
+          <Card className="p-0 shadow-md rounded-xl mt-1 flex-grow min-h-0" style={{ maxHeight: "38vh" }}>
             <ShabbatTimes />
           </Card>
         </div>
 
         {/* Left Section - YouTube Video (60%) */}
-        <div className="w-3/5 p-3">
+        <div className="w-3/5 p-3 min-h-0">
           <Card className="h-full overflow-hidden rounded-xl shadow-lg">
             <YoutubeEmbed />
           </Card>
@@ -70,7 +79,7 @@ export default function LobbyDashboard() {
       </div>
 
       {/* Bottom Ticker */}
-      <div className="h-14 bg-white border-t">
+      <div className="h-14 shrink-0 bg-white border-t">
         <NewsTicker />
       </div>
     </div>

@@ -1,170 +1,95 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Flame, Sunset, CalendarIcon, Loader2, MapPinIcon, RefreshCw } from "lucide-react"
 
-// Interface for Shabbat times data from API
+// Shape returned by /api/shabbat
 interface ShabbatData {
-  candleLighting: string;
-  havdalah: string;
-  parasha: string;
-  location: string;
-  error?: string;
-  lastRefreshed?: Date;
+  candleLighting: string
+  havdalah: string
+  candleISO: string
+  havdalahISO: string
+  parasha: string
+  shabbatDate: string // YYYY-MM-DD (Saturday)
+  location: string
 }
 
-// City location data
-interface CityLocation {
-  name: string;
-  hebrewName: string;
-  latitude: number;
-  longitude: number;
+interface City {
+  key: "netanya" | "telaviv"
+  hebrewName: string
 }
 
-// Available cities
-const CITIES: CityLocation[] = [
-  {
-    name: "Netanya",
-    hebrewName: "נתניה",
-    latitude: 32.3215,
-    longitude: 34.8532
-  },
-  {
-    name: "Tel Aviv",
-    hebrewName: "תל אביב",
-    latitude: 32.0853,
-    longitude: 34.7818
-  }
-];
+const CITIES: City[] = [
+  { key: "netanya", hebrewName: "נתניה" },
+  { key: "telaviv", hebrewName: "תל אביב" },
+]
+
+const SIX_HOURS = 6 * 60 * 60 * 1000
+const TEN_MINUTES = 10 * 60 * 1000
+
+// Format the Saturday date in Hebrew, e.g. "שבת, 24 באוקטובר"
+function formatShabbatDate(isoDate: string): string {
+  const [y, m, d] = isoDate.split("-").map(Number)
+  if (!y || !m || !d) return ""
+  // Noon local time avoids any day shift from timezone offsets
+  const date = new Date(y, m - 1, d, 12)
+  return date.toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" })
+}
 
 export function ShabbatTimes() {
-  const [selectedCityIndex, setSelectedCityIndex] = useState(0); // Default to Netanya
-  const [shabbatTimes, setShabbatTimes] = useState<ShabbatData>({
-    candleLighting: "...",
-    havdalah: "...",
-    parasha: "...",
-    location: CITIES[0].hebrewName,
-    lastRefreshed: new Date(),
-  })
+  const [cityIndex, setCityIndex] = useState(0) // Default to Netanya
+  const [data, setData] = useState<ShabbatData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState("")
-  const [lastCheckedDay, setLastCheckedDay] = useState<number>(new Date().getDay())
-  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [error, setError] = useState(false)
+  const havdalahTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Fetch Shabbat times whenever the selected city changes
-  useEffect(() => {
-    fetchShabbatTimes(CITIES[selectedCityIndex]);
-  }, [selectedCityIndex])
+  const city = CITIES[cityIndex]
 
-  // Set up periodic checks for day changes
-  useEffect(() => {
-    // Check if we need to refresh when component mounts
-    checkAndRefreshIfNeeded();
-    
-    // Set up daily interval to check if it's time to refresh (every 6 hours)
-    checkIntervalRef.current = setInterval(() => {
-      checkAndRefreshIfNeeded();
-    }, 6 * 60 * 60 * 1000); // Check every 6 hours
-    
-    // Cleanup on unmount
-    return () => {
-      if (checkIntervalRef.current) {
-        clearInterval(checkIntervalRef.current);
-      }
-    };
-  }, [selectedCityIndex]);
-
-  // Function to check if we need to refresh the data
-  const checkAndRefreshIfNeeded = () => {
-    const today = new Date();
-    const currentDay = today.getDay();
-    
-    // If it's Sunday (day 0) and we haven't refreshed today
-    if (currentDay === 0 && lastCheckedDay !== 0) {
-      console.log("It's Sunday, refreshing Shabbat times for next weekend");
-      fetchShabbatTimes(CITIES[selectedCityIndex]);
-    }
-    
-    // Update the last checked day
-    setLastCheckedDay(currentDay);
-  };
-
-  // Manually refresh data
-  const refreshData = () => {
-    fetchShabbatTimes(CITIES[selectedCityIndex]);
-  };
-
-  // Function to switch cities
-  const toggleCity = () => {
-    setSelectedCityIndex((prevIndex) => (prevIndex === 0 ? 1 : 0));
-  }
-
-  async function fetchShabbatTimes(city: CityLocation) {
+  const fetchShabbatTimes = useCallback(async (cityKey: City["key"]) => {
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      
-      // Get upcoming Shabbat info from Hebcal API
-      const response = await fetch(
-        `https://www.hebcal.com/shabbat?cfg=json&latitude=${city.latitude}&longitude=${city.longitude}&havdalahMins=42&timezone=Asia/Jerusalem&M=on`
-      )
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch Shabbat times")
-      }
-      
-      const data = await response.json()
-      
-      // Find candle lighting and havdalah times
-      let candleLighting = "";
-      let havdalah = "";
-      let parasha = "";
-      
-      // Parse items from Hebcal response
-      if (data.items && data.items.length) {
-        for (const item of data.items) {
-          if (item.category === "candles") {
-            candleLighting = formatTime(new Date(item.date))
-          } 
-          else if (item.category === "havdalah") {
-            havdalah = formatTime(new Date(item.date))
-          }
-          else if (item.category === "parashat") {
-            // Extract just the parasha name in Hebrew
-            parasha = item.hebrew || item.title.replace("Parashat ", "")
-          }
-        }
-      }
-      
-      setShabbatTimes({
-        candleLighting: candleLighting || "19:15", // Fallback value
-        havdalah: havdalah || "20:25", // Fallback value
-        parasha: parasha || "פרשת השבוע", // Fallback value
-        location: city.hebrewName,
-        lastRefreshed: new Date(),
-      })
+      const response = await fetch(`/api/shabbat?city=${cityKey}`, { cache: "no-store" })
+      if (!response.ok) throw new Error(`API error: ${response.status}`)
+      const json = await response.json()
+      if (!json.success) throw new Error(json.message || "API returned failure")
+      setData(json as ShabbatData)
+      setError(false)
     } catch (err) {
       console.error("Error fetching Shabbat times:", err)
-      setError("שגיאה בטעינת נתוני השבת")
-      
-      // Set fallback values in case of error
-      setShabbatTimes({
-        candleLighting: "19:15", 
-        havdalah: "20:25",
-        parasha: "תצווה",
-        location: city.hebrewName,
-        lastRefreshed: new Date(),
-      })
+      setError(true)
     } finally {
       setIsLoading(false)
     }
-  }
-  
-  // Helper function to format time in HH:MM format
-  function formatTime(date: Date): string {
-    const hours = date.getHours().toString().padStart(2, "0")
-    const minutes = date.getMinutes().toString().padStart(2, "0")
-    return `${hours}:${minutes}`
-  }
+  }, [])
+
+  // Fetch on mount / city change, then every 6 hours. On failure retry every 10 minutes.
+  useEffect(() => {
+    fetchShabbatTimes(city.key)
+    const interval = setInterval(() => fetchShabbatTimes(city.key), error ? TEN_MINUTES : SIX_HOURS)
+    return () => clearInterval(interval)
+  }, [city.key, error, fetchShabbatTimes])
+
+  // Refetch once shortly after havdalah so Saturday night already shows next week's times
+  useEffect(() => {
+    if (havdalahTimerRef.current) clearTimeout(havdalahTimerRef.current)
+    if (!data?.havdalahISO) return
+
+    const delay = new Date(data.havdalahISO).getTime() + 5 * 60 * 1000 - Date.now()
+    if (delay <= 0) return
+
+    havdalahTimerRef.current = setTimeout(() => fetchShabbatTimes(city.key), delay)
+    return () => {
+      if (havdalahTimerRef.current) clearTimeout(havdalahTimerRef.current)
+    }
+  }, [data?.havdalahISO, city.key, fetchShabbatTimes])
+
+  const toggleCity = () => setCityIndex((prev) => (prev === 0 ? 1 : 0))
+  const refreshData = () => fetchShabbatTimes(city.key)
+
+  const showTimes = data !== null && !error
+  const candleLighting = showTimes ? data.candleLighting : "—"
+  const havdalah = showTimes ? data.havdalah : "—"
+  const parasha = showTimes && data.parasha ? data.parasha : "—"
 
   return (
     <div
@@ -175,81 +100,74 @@ export function ShabbatTimes() {
         borderRadius: "0.75rem",
       }}
     >
-      {/* Background image with improved positioning */}
+      {/* Background image */}
       <div className="absolute inset-0 z-0 flex items-center justify-center">
-        <div 
+        <div
           style={{
-            width: "120%", 
-            height: "120%", 
+            width: "120%",
+            height: "120%",
             position: "absolute",
             opacity: 0.3,
           }}
         >
-          <img 
-            src="/images/shabbat-background.jpg" 
-            alt="Shabbat items" 
+          <img
+            src="/images/shabbat-background.jpg"
+            alt="Shabbat items"
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
               position: "absolute",
               top: 0,
-              left: 0
+              left: 0,
             }}
           />
         </div>
       </div>
-      
-      {/* Content with better vertical distribution */}
+
       <div className="relative z-10 w-full flex flex-col items-center">
         <h2 className="text-4xl font-extrabold mb-1 text-amber-800">זמני שבת</h2>
-        
-        {/* City selector row - more compact */}
+
+        {/* City selector row */}
         <div className="flex items-center gap-2 mb-1">
-          <div 
+          <div
             className="flex items-center gap-1 cursor-pointer bg-amber-100 px-2 py-1 rounded-full"
             onClick={toggleCity}
           >
             <MapPinIcon className="h-4 w-4 text-amber-700" />
-            <span className="text-lg font-bold text-amber-800">{shabbatTimes.location}</span>
+            <span className="text-lg font-bold text-amber-800">{city.hebrewName}</span>
             <span className="text-xs bg-amber-200 px-1 py-0.5 rounded-full text-amber-800">לחץ להחלפה</span>
           </div>
-          
-          {/* Manual refresh button */}
-          <button 
+
+          <button
             onClick={refreshData}
             disabled={isLoading}
             className="flex items-center justify-center bg-amber-100 p-1 rounded-full hover:bg-amber-200 transition-colors"
             title="רענן זמני שבת"
           >
-            <RefreshCw className={`h-4 w-4 text-amber-700 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 text-amber-700 ${isLoading ? "animate-spin" : ""}`} />
           </button>
         </div>
-        
-        {/* Last refreshed info - smaller */}
-        {shabbatTimes.lastRefreshed && (
-          <div className="text-sm text-amber-700 mb-0.5">
-            עודכן לאחרונה: {shabbatTimes.lastRefreshed.toLocaleDateString('he-IL')}
-          </div>
+
+        {/* Which Shabbat these times are for */}
+        {showTimes && (
+          <div className="text-sm text-amber-700 mb-0.5">{formatShabbatDate(data.shabbatDate)}</div>
         )}
-        
-        {isLoading ? (
+
+        {isLoading && !data ? (
           <div className="flex flex-col items-center justify-center py-2">
             <Loader2 className="h-8 w-8 text-amber-700 animate-spin mb-1" />
             <p className="text-lg text-amber-900">טוען זמני שבת...</p>
           </div>
-        ) : error ? (
-          <div className="text-red-600 text-lg font-bold mb-1">{error}</div>
         ) : (
           <div className="flex flex-col items-center justify-center space-y-1">
-            {/* Candle lighting and Havdalah times */}
             <div className="flex justify-center gap-10 mt-1 w-full">
               <div className="flex flex-col items-center">
                 <div className="flex items-center mb-0.5">
                   <Flame className="h-7 w-7 text-orange-500" />
                 </div>
                 <div className="text-xl font-bold text-amber-900">הדלקת נרות</div>
-                <div className="text-3xl font-bold text-amber-900">{shabbatTimes.candleLighting}</div>
+                <div className="text-3xl font-bold text-amber-900">{candleLighting}</div>
               </div>
 
               <div className="flex flex-col items-center">
@@ -257,17 +175,22 @@ export function ShabbatTimes() {
                   <Sunset className="h-7 w-7 text-purple-500" />
                 </div>
                 <div className="text-xl font-bold text-amber-900">צאת שבת</div>
-                <div className="text-3xl font-bold text-amber-900">{shabbatTimes.havdalah}</div>
+                <div className="text-3xl font-bold text-amber-900">{havdalah}</div>
               </div>
             </div>
 
-            {/* Parasha info */}
             <div className="mt-1 mb-0 text-xl font-bold text-amber-800">
               <div className="flex items-center justify-center gap-1">
                 <CalendarIcon className="h-5 w-5" />
-                <span>פרשת השבוע: <span className="font-black">{shabbatTimes.parasha}</span></span>
+                <span>
+                  פרשת השבוע: <span className="font-black">{parasha}</span>
+                </span>
               </div>
             </div>
+
+            {error && (
+              <div className="text-sm text-red-600 font-bold">לא ניתן לטעון זמני שבת</div>
+            )}
           </div>
         )}
       </div>
