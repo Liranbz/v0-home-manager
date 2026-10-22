@@ -12,6 +12,8 @@ interface YTPlayer {
   playVideo: () => void
   mute: () => void
   unMute: () => void
+  isMuted: () => boolean
+  getPlayerState: () => number
   setPlaybackQuality: (quality: string) => void
 }
 
@@ -56,13 +58,21 @@ declare global {
 // Constants
 // ---------------------------------------------------------------------------
 
-// Verified working video IDs (checked via YouTube oEmbed, 2026-10-22)
+// Long (11-24 h) ocean / nature films with relaxing music. Each one was
+// checked on 2026-10-22: embeddable, not a live stream, plays on its own.
+// One is picked at random per page load and looped, so the screen is not
+// changing videos all day; broken or stalled videos still auto-skip.
 const VIDEO_IDS = [
-  "1ZYbU82GVz4", // Flying: Relaxing Sleep Music - Soothing Relaxation
-  "z-qigE1ym40", // Beautiful Relaxing Music - Inner Peace Look Inside
-  "prfZFyp4XZk", // 12 Hours of Stunning Aquarium Relax Music
-  "-CDH2fN7XXA", // Calm Marimba Music & Water Sounds in Aquarium - Soothing Relaxation
-  "_kvEuReNgsw", // Aquarium 4K - Coral Reef Fish with Relaxing Music
+  "zCwwpnFXRMU", // Hawaii 4K - Relaxing Music With Beautiful Natural Landscape (24 h)
+  "2OYar8OHEOU", // Beautiful Nature Scenery, Peaceful Soothing Music (23 h)
+  "oa1qKT-VJvo", // Greece 4K - Scenic Relaxation Film With Calming Music (23 h)
+  "yc31e3h8Ehk", // 24 Hours of 4K Underwater Wonders + Relaxing Music (23 h)
+  "3xPkwNu2o8g", // "Splendors of Nature" Planet Earth's Wonders by Drone (12 h)
+  "aSk-D86aOtc", // Calming Ocean Sunset Ambience 4K (12 h)
+  "KIjSUAvm8EI", // Sunrise from Kailua Beach, Hawaii (12 h)
+  "gnMajPQgkiA", // 12 Hour 4K Ocean Waves, White Sand Beach (11 h)
+  "SYyvx6GE2UI", // Nature Europe 4K - Calm Horizon with Deep Relaxing Music (12 h)
+  "KLuTLF3x9sA", // Norway 4K - Scenic Relaxation Film (11 h)
 ]
 
 // Nature images for the fallback slideshow
@@ -93,7 +103,27 @@ function getPlayerBox() {
 }
 
 const BUFFERING_TIMEOUT_MS = 20 * 1000 // stuck buffering → next video
-const ROTATE_INTERVAL_MS = 2 * 60 * 60 * 1000 // switch video every 2 h
+// Sound preference. Browsers only allow autoplay when muted, so we start muted,
+// then unmute as soon as the browser lets us: immediately where allowed, or on
+// the first touch / key press after each reload. Default is sound ON.
+const SOUND_PREF_KEY = "lobby-sound"
+const UNMUTE_CHECK_MS = 1500
+
+function wantSound(): boolean {
+  try {
+    return localStorage.getItem(SOUND_PREF_KEY) !== "off"
+  } catch {
+    return true
+  }
+}
+
+function saveSoundPref(on: boolean) {
+  try {
+    localStorage.setItem(SOUND_PREF_KEY, on ? "on" : "off")
+  } catch {
+    /* ignore */
+  }
+}
 const FALLBACK_RETRY_MS = 10 * 60 * 1000 // retry YouTube every 10 min
 const SLIDESHOW_INTERVAL_MS = 8 * 1000
 
@@ -143,6 +173,7 @@ export function YoutubeEmbed() {
   const playerMountRef = useRef<HTMLDivElement>(null) // stable wrapper; YT replaces its child
   const playerRef = useRef<YTPlayer | null>(null)
   const videoIndexRef = useRef(0)
+  const pickedStartRef = useRef(false) // random start video, chosen once on the client
   const failedRef = useRef<Set<number>>(new Set())
   const bufferingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -152,6 +183,55 @@ export function YoutubeEmbed() {
       bufferingTimerRef.current = null
     }
   }
+
+  // Try to unmute. If the browser blocks unmuted playback (no user gesture
+  // yet) the player pauses; detect that, go back to muted playback and wait
+  // for a gesture. Returns nothing; state is reported via isMuted.
+  const unmuteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const tryUnmute = useCallback(() => {
+    const p = playerRef.current
+    if (!p || !wantSound()) return
+    try {
+      p.unMute()
+    } catch {
+      return
+    }
+    if (unmuteTimerRef.current) clearTimeout(unmuteTimerRef.current)
+    unmuteTimerRef.current = setTimeout(() => {
+      unmuteTimerRef.current = null
+      const player = playerRef.current
+      if (!player || !window.YT) return
+      const st = player.getPlayerState()
+      const S = window.YT.PlayerState
+      if (st === S.PLAYING || st === S.BUFFERING) {
+        setIsMuted(false)
+      } else {
+        // Blocked by autoplay policy: back to muted playback.
+        player.mute()
+        player.playVideo()
+        setIsMuted(true)
+      }
+    }, UNMUTE_CHECK_MS)
+  }, [])
+
+  // Any user gesture (touch, click, remote-control key) lets us unmute.
+  useEffect(() => {
+    if (mode !== "video") return
+    const onGesture = () => {
+      const p = playerRef.current
+      if (p && wantSound() && p.isMuted()) tryUnmute()
+    }
+    const opts = { passive: true } as const
+    document.addEventListener("pointerdown", onGesture, opts)
+    document.addEventListener("keydown", onGesture, opts)
+    document.addEventListener("touchstart", onGesture, opts)
+    return () => {
+      document.removeEventListener("pointerdown", onGesture)
+      document.removeEventListener("keydown", onGesture)
+      document.removeEventListener("touchstart", onGesture)
+      if (unmuteTimerRef.current) clearTimeout(unmuteTimerRef.current)
+    }
+  }, [mode, tryUnmute])
 
   // Move to the next video (round-robin). If `markFailed` and every video has
   // failed in this cycle, switch to the slideshow fallback.
@@ -224,6 +304,13 @@ export function YoutubeEmbed() {
 
     setPlayerReady(false)
 
+    if (!pickedStartRef.current) {
+      pickedStartRef.current = true
+      const r = Math.floor(Math.random() * VIDEO_IDS.length)
+      videoIndexRef.current = r
+      setVideoIndex(r)
+    }
+
     loadYouTubeApi()
       .then((YT) => {
         if (cancelled) return
@@ -255,6 +342,7 @@ export function YoutubeEmbed() {
               e.target.playVideo()
               setIsMuted(true)
               setPlayerReady(true)
+              tryUnmute() // works right away where the browser allows it
             },
             onStateChange: (e) => {
               if (cancelled) return
@@ -304,14 +392,7 @@ export function YoutubeEmbed() {
       if (host.parentNode === mount) mount.removeChild(host)
       setPlayerReady(false)
     }
-  }, [mode, advance])
-
-  // --- Rotate to a different video every 2 hours ---------------------------
-  useEffect(() => {
-    if (mode !== "video") return
-    const id = setInterval(() => advance(false), ROTATE_INTERVAL_MS)
-    return () => clearInterval(id)
-  }, [mode, advance])
+  }, [mode, advance, tryUnmute])
 
   // --- Fallback: slideshow + periodic retry of YouTube ----------------------
   useEffect(() => {
@@ -332,8 +413,13 @@ export function YoutubeEmbed() {
     const p = playerRef.current
     if (!p) return
     try {
-      if (isMuted) p.unMute()
-      else p.mute()
+      if (isMuted) {
+        saveSoundPref(true)
+        p.unMute()
+      } else {
+        saveSoundPref(false)
+        p.mute()
+      }
       setIsMuted(!isMuted)
     } catch (e) {
       console.error("toggleMute failed", e)
