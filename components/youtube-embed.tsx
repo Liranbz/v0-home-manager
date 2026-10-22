@@ -125,6 +125,7 @@ function saveSoundPref(on: boolean) {
   }
 }
 const FALLBACK_RETRY_MS = 10 * 60 * 1000 // retry YouTube every 10 min
+const START_TIMEOUT_MS = 45 * 1000 // player never reached PLAYING → treat as failed
 const SLIDESHOW_INTERVAL_MS = 8 * 1000
 
 // Error codes from the IFrame API that mean "this video won't play here"
@@ -161,7 +162,12 @@ function loadYouTubeApi(): Promise<YTNamespace> {
 // Component
 // ---------------------------------------------------------------------------
 export function YoutubeEmbed() {
-  const [mode, setMode] = useState<"video" | "fallback">("video")
+  // `?fallback=1` forces the slideshow mode, to check it on the TV.
+  const [mode, setMode] = useState<"video" | "fallback">(() =>
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).has("fallback")
+      ? "fallback"
+      : "video"
+  )
   const [videoIndex, setVideoIndex] = useState(0)
   const [isMuted, setIsMuted] = useState(true)
   const [playerReady, setPlayerReady] = useState(false)
@@ -176,11 +182,19 @@ export function YoutubeEmbed() {
   const pickedStartRef = useRef(false) // random start video, chosen once on the client
   const failedRef = useRef<Set<number>>(new Set())
   const bufferingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const startTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const clearBufferingTimer = () => {
     if (bufferingTimerRef.current) {
       clearTimeout(bufferingTimerRef.current)
       bufferingTimerRef.current = null
+    }
+  }
+
+  const clearStartTimer = () => {
+    if (startTimerRef.current) {
+      clearTimeout(startTimerRef.current)
+      startTimerRef.current = null
     }
   }
 
@@ -257,11 +271,25 @@ export function YoutubeEmbed() {
       try {
         playerRef.current.loadVideoById(VIDEO_IDS[next])
         playerRef.current.setPlaybackQuality("small")
+        armStartTimer()
       } catch (e) {
         console.error("loadVideoById failed", e)
       }
     }
   }, [])
+
+  // Watchdog: a video that never reaches PLAYING (bot-check interstitial,
+  // blocked embed, dead network) fires no error event, so treat it as failed.
+  const advanceRef = useRef(advance)
+  advanceRef.current = advance
+  function armStartTimer() {
+    clearStartTimer()
+    startTimerRef.current = setTimeout(() => {
+      startTimerRef.current = null
+      console.warn("Video never started playing - skipping")
+      advanceRef.current(true)
+    }, START_TIMEOUT_MS)
+  }
 
   // --- Scale the fixed-size player to cover the container ------------------
   useEffect(() => {
@@ -342,6 +370,7 @@ export function YoutubeEmbed() {
               e.target.playVideo()
               setIsMuted(true)
               setPlayerReady(true)
+              armStartTimer()
               tryUnmute() // works right away where the browser allows it
             },
             onStateChange: (e) => {
@@ -359,6 +388,7 @@ export function YoutubeEmbed() {
               }
               clearBufferingTimer()
               if (e.data === S.PLAYING) {
+                clearStartTimer()
                 failedRef.current.clear() // a video plays → reset the failure cycle
                 e.target.setPlaybackQuality("small")
               } else if (e.data === S.ENDED) {
@@ -381,6 +411,7 @@ export function YoutubeEmbed() {
     return () => {
       cancelled = true
       clearBufferingTimer()
+      clearStartTimer()
       if (playerRef.current) {
         try {
           playerRef.current.destroy()
