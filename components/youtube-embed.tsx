@@ -380,6 +380,7 @@ export function YoutubeEmbed() {
       {/* Fixed 640x360-physical-pixel player, scaled to cover the container */}
       <div
         ref={playerMountRef}
+        className="yt-player-mount"
         style={{
           position: "absolute",
           top: "50%",

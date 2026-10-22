@@ -37,3 +37,12 @@ body {
 .duration-2000 {
   transition-duration: 2000ms;
 }
+
+/* The YouTube iframe is created with fixed width/height attributes. When the
+   device pixel ratio changes (browser zoom) the mount box is resized, so the
+   iframe must follow it or the video is letterboxed. */
+.yt-player-mount iframe {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}

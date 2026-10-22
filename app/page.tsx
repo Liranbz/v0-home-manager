@@ -41,12 +41,14 @@ export default function LobbyDashboard() {
         {/* Right Section - Building Info (40%) */}
         <div className="w-2/5 p-3 flex flex-col gap-0 min-h-0">
           {/* Top Area - Building Name & Weather */}
-          <Card className="p-1 shadow-md rounded-xl mb-1">
+          <Card className="p-1 shadow-md rounded-xl mb-1 shrink-0">
             <BuildingHeader buildingName="הגלעד 3 נתניה" />
           </Card>
 
-          {/* Middle Area - Announcements */}
-          <div className="flex-1 min-h-0 max-h-[35vh]">
+          {/* Middle Area - Announcements: takes whatever height the header and
+              Shabbat cards leave, so the same number of items fit regardless
+              of browser zoom or screen size. */}
+          <div className="flex-1 min-h-0">
             <Card
               className="h-full shadow-lg rounded-xl overflow-hidden relative"
               style={{
@@ -64,8 +66,8 @@ export default function LobbyDashboard() {
             </Card>
           </div>
 
-          {/* Bottom Area - Shabbat Times */}
-          <Card className="p-0 shadow-md rounded-xl mt-1 flex-grow min-h-0" style={{ maxHeight: "38vh" }}>
+          {/* Bottom Area - Shabbat Times: natural content height */}
+          <Card className="p-0 shadow-md rounded-xl mt-1 shrink-0">
             <ShabbatTimes />
           </Card>
         </div>
