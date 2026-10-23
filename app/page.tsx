@@ -6,6 +6,8 @@ import { BuildingHeader } from "@/components/building-header"
 import { AnnouncementsList } from "@/components/announcements-list"
 import { ShabbatTimes } from "@/components/shabbat-times"
 import { NewsTicker } from "@/components/news-ticker"
+import { ShabbatScreen } from "@/components/shabbat-screen"
+import { useShabbatMode } from "@/hooks/use-shabbat-mode"
 
 // Hard-reload the page once a day at 03:30 local time so the lobby TV recovers
 // from browser memory leaks and picks up new deployments.
@@ -23,6 +25,9 @@ function msUntilNextReload(): number {
 }
 
 export default function LobbyDashboard() {
+  // From candle lighting to havdalah: still picture instead of video, no music.
+  const shabbat = useShabbatMode()
+
   useEffect(() => {
     const timer = setTimeout(() => window.location.reload(), msUntilNextReload())
     return () => clearTimeout(timer)
@@ -75,7 +80,11 @@ export default function LobbyDashboard() {
         {/* Left Section - YouTube Video (60%) */}
         <div className="w-3/5 p-3 min-h-0">
           <Card className="h-full overflow-hidden rounded-xl shadow-lg">
-            <YoutubeEmbed />
+            {shabbat.active ? (
+              <ShabbatScreen parasha={shabbat.parasha} havdalah={shabbat.havdalah} />
+            ) : (
+              <YoutubeEmbed />
+            )}
           </Card>
         </div>
       </div>
